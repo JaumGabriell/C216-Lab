@@ -1,0 +1,39 @@
+services:
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIROMENT: development
+    volumes:
+      - ./backend/app:/app/app
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload"
+      ]
+
+  db:
+    image: postgres:15
+    container_name: c216_db
+    environment:
+      POSTGRES_DB: c216
+      POSTGRES_USER: c216
+      POSTGRES_PASSWORD: c216
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
