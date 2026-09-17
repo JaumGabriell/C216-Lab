@@ -45,7 +45,7 @@ jobs:
             venv-${{ runner.os }}-
 
       - name: Instalar dependências
-        run: poetry install --no-interaction
+        run: poetry install --no-interaction --no-root
 
       - name: Executar testes com Pytest
         run: poetry run pytest -v --tb=short
