@@ -1,0 +1,51 @@
+name: CI Backend
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - aulas
+  pull_request:
+    branches:
+      - main
+      - master
+      - aulas
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache de dependências
+        uses: actions/cache@v4
+        with:
+          path: backend/.venv
+          key: venv-${{ runner.os }}-${{ hashFiles('backend/poetry.lock') }}
+          restore-keys: |
+            venv-${{ runner.os }}-
+
+      - name: Instalar dependências
+        run: poetry install --no-interaction --no-root
+
+      - name: Executar testes com Pytest
+        run: poetry run pytest -v --tb=short
