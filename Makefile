@@ -3,7 +3,7 @@ BACKEND_DIR = backend
 POETRY = poetry
 
 # Phony targets
-.PHONY: help install test lint format run help compose-up compose-down compose-ps
+.PHONY: help install test test-verbose test-cov lint format run help compose-up compose-down compose-ps
 
 # Target padrão
 .DEFAULT_GOAL := help
@@ -19,6 +19,12 @@ install: ## Instala as dependências do backend
 
 test: ## Executa os testes do backend
 	cd $(BACKEND_DIR) && $(POETRY) run pytest
+
+test-verbose: ## Executa os testes com saída detalhada
+	cd $(BACKEND_DIR) && $(POETRY) run pytest -v
+
+test-cov: ## Executa os testes com relatório de cobertura
+	cd $(BACKEND_DIR) && $(POETRY) run pytest --cov=app --cov-report=term-missing
 
 compose-up: ## Inicia os containers do docker
 	docker compose up -d
