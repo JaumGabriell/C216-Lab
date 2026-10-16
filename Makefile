@@ -52,3 +52,9 @@ compose-logs: ## Mostra logs dos containers
 
 compose-restart: ## Reinicia os containers
 	docker compose restart
+
+lint: ## Executa o linter (ruff)
+	cd $(BACKEND_DIR) && $(POETRY) run ruff check .
+
+format: ## Formata o código (ruff)
+	cd $(BACKEND_DIR) && $(POETRY) run ruff format .

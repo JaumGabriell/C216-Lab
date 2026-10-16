@@ -1,5 +1,4 @@
 services:
-
   api:
     build:
       context: ./backend
@@ -9,9 +8,15 @@ services:
     ports:
       - "8000:8000"
     environment:
-      ENVIROMENT: development
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://c216:c216@db:5432/c216
     volumes:
       - ./backend/app:/app/app
+      - ./backend/core:/app/core
+      - ./backend/database:/app/database
+      - ./backend/models:/app/models
+      - ./backend/repositories:/app/repositories
+      - ./backend/alembic:/app/alembic
     command:
       [
         "uvicorn",
@@ -20,7 +25,7 @@ services:
         "0.0.0.0",
         "--port",
         "8000",
-        "--reload"
+        "--reload",
       ]
 
   db:
