@@ -58,19 +58,19 @@ jobs:
 
       # Inicia os serviços necessários para o E2E
       - name: Start application
-        run: docker compose -f ../docker-compose.yml up -d --build
+        run: docker compose -f ../compose.yml up -d --build
 
       # Aguarda o PostgreSQL
       - name: Wait for PostgreSQL
         run: |
           for attempt in $(seq 1 30); do
-            if docker compose -f ../docker-compose.yml exec -T db pg_isready -U c216 -d c216; then
+            if docker compose -f ../compose.yml exec -T db pg_isready -U c216 -d c216; then
               exit 0
             fi
             sleep 2
           done
 
-          docker compose -f ../docker-compose.yml logs db
+          docker compose -f ../compose.yml logs db
           exit 1
 
       # Aguarda backend e frontend
@@ -85,12 +85,12 @@ jobs:
             sleep 2
           done
 
-          docker compose -f ../docker-compose.yml logs
+          docker compose -f ../compose.yml logs
           exit 1
 
       # Prepara o banco para o teste E2E
       - name: Run database migrations
-        run: docker compose -f ../docker-compose.yml exec -T api alembic upgrade head
+        run: docker compose -f ../compose.yml exec -T api alembic upgrade head
 
       # Teste de persistência
       - name: Playwright E2E
@@ -111,4 +111,4 @@ jobs:
       # Finaliza os containers
       - name: Stop application
         if: always()
-        run: docker compose -f ../docker-compose.yml down
+        run: docker compose -f ../compose.yml down
