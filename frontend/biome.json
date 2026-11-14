@@ -13,8 +13,12 @@
       "!**/dist/",
       "!**/coverage",
       "!**/playwright-report",
-      "!**/tests-results",
-      "!**/package-lock.json"
+      "!**/test-results",
+      "!**/package-lock.json",
+      "!public/favicon.ico",
+      "!public/icons.svg",
+      "!**/icons.svg",
+      "!**/favicon.svg"
     ]
   },
   "formatter": {

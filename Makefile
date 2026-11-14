@@ -79,24 +79,20 @@ check-all: ## Executa verificações do backend e frontend
 	$(MAKE) frontend-build
 	$(MAKE) frontend-test-e2e
 
-compose-up: ## Inicia os containers do docker
-	docker compose up -d
+compose-up: ## Inicia todos os containers
+	docker compose up -d --build
 
-compose-down: ## Para os containers do docker
+compose-down: ## Para todos os containers
 	docker compose down
 
-docker-ps: ## Mostra os containers do docker
-	docker ps
+compose-ps: ## Mostra o estado dos containers
+	docker compose ps
 
 compose-build: ## Reconstrói as imagens
 	docker compose build
 
-compose-logs: ## Mostra logs dos containers
+compose-logs: ## Mostra os logs dos containers
 	docker compose logs -f
-
-compose-restart: ## Reinicia os containers
-	docker compose restart
-
 lint: ## Executa o linter (ruff)
 	cd $(BACKEND_DIR) && $(POETRY) run ruff check .
 
