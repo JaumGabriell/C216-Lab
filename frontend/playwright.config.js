@@ -4,9 +4,7 @@ export default defineConfig({
   testDir: "./src/tests/e2e",
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI
-    ? [["github"], ["html", { open: "never" }]]
-    : "list",
+  reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
 
   use: {
     baseURL: "http://127.0.0.1:5173",
