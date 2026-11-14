@@ -1,61 +1,62 @@
-from app.schemas.user import UserCreate, UserUpdate, User
+from sqlalchemy.orm import Session
 
-# simulando um bd
+from app.schemas.user import User as UserSchema
+from app.schemas.user import UserCreate, UserUpdate
+from repositories.user import UserRepository
 
-users_db: dict[int, User] = {}
-next_id = 1
 
-# Listar todos os usuários
-def get_all_users() -> list[User]:
-    return list(users_db.values())
+def get_all_users(db: Session) -> list[UserSchema]:
+    repo = UserRepository(db)
+    users = repo.get_all()
+    return [UserSchema.model_validate(u, from_attributes=True) for u in users]
 
-# Buscar usuário por ID
-def get_user_by_id(user_id: int) -> User | None:
-    return users_db.get(user_id)
 
-# Criar usuário
-def create_user(user: UserCreate) -> User:
-    global next_id
-    user_dict = user.model_dump()
-    user_dict["id"] = next_id
-    next_id += 1
-    user_obj = User(**user_dict)
-    users_db[user_obj.id] = user_obj
-    return user_obj
+def get_user_by_id(db: Session, user_id: int) -> UserSchema | None:
+    repo = UserRepository(db)
+    user = repo.get_by_id(user_id)
+    if user:
+        return UserSchema.model_validate(user, from_attributes=True)
+    return None
 
-# Atualizar usuário (PUT)
-def update_user(user_id: int, user: UserUpdate) -> User | None:
-    if user_id not in users_db:
-        return None
-    user_dict = user.model_dump()
-    user_dict["id"] = user_id
-    user_obj = User(**user_dict)
-    users_db[user_obj.id] = user_obj
-    return user_obj
 
-#  Atualizar parcialmente um usuário (PATCH)
-def patch_user(user_id: int, user: UserUpdate) -> User | None:
-    if user_id not in users_db:
-        return None
-    current = users_db[user_id]
-    user_obj = User(
-        id=user_id,
-        name=user.name if user.name is not None else current.name,
-        email=user.email if user.email is not None else current.email,
-        password=user.password if user.password is not None else current.password,
+def create_user(db: Session, user: UserCreate) -> UserSchema:
+    repo = UserRepository(db)
+    db_user = repo.create(
+        name=user.name,
+        email=user.email,
+        password=user.password,
     )
-    users_db[user_obj.id] = user_obj
-    return user_obj
+    return UserSchema.model_validate(db_user, from_attributes=True)
 
-# Deletar usuário por id
-def delete_user(user_id: int) -> bool:
-    if user_id not in users_db:
+
+def update_user(db: Session, user_id: int, user: UserCreate) -> UserSchema | None:
+    repo = UserRepository(db)
+    db_user = repo.get_by_id(user_id)
+    if not db_user:
+        return None
+    updated = repo.update(
+        db_user,
+        name=user.name,
+        email=user.email,
+        password=user.password,
+    )
+    return UserSchema.model_validate(updated, from_attributes=True)
+
+
+def patch_user(db: Session, user_id: int, user: UserUpdate) -> UserSchema | None:
+    repo = UserRepository(db)
+    db_user = repo.get_by_id(user_id)
+    if not db_user:
+        return None
+    update_data = user.model_dump(exclude_unset=True)
+    updated = repo.update(db_user, **update_data)
+    return UserSchema.model_validate(updated, from_attributes=True)
+
+
+def delete_user(db: Session, user_id: int) -> bool:
+    repo = UserRepository(db)
+    db_user = repo.get_by_id(user_id)
+    if not db_user:
         return False
-    del users_db[user_id]
+    repo.delete(db_user)
     return True
-
-# limpa o bd simulado
-def clear_all_users() -> None:
-    users_db.clear()
-    global next_id
-    next_id = 1

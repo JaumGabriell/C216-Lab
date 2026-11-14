@@ -6,11 +6,17 @@ on:
       - main
       - master
       - aulas
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
   pull_request:
     branches:
       - main
       - master
       - aulas
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
 
 jobs:
   test:

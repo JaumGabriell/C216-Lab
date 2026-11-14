@@ -16,6 +16,13 @@ RUN poetry config virtualenvs.create false \
 
 #copiar codigo fonte
 COPY app ./app
+COPY core ./core
+COPY database ./database
+COPY models ./models
+COPY repositories ./repositories
+COPY alembic ./alembic
+COPY alembic.ini ./
+
 
 #expor porta
 EXPOSE 8000
