@@ -15,36 +15,88 @@ on:
 
 jobs:
   frontend:
-    name: Biome, Vitest, Build e Playwright
+    name: ESLint, Biome, Vitest, Build e Playwright
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     defaults:
       run:
         working-directory: frontend
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-      - run: npm run lint
+      # Qualidade do código
+      - name: ESLint
+        run: npm run lint
 
-      - run: npm run format:check
+      - name: Biome
+        run: npm run check
 
-      - run: npm run test
+      # Testes unitários e de integração
+      - name: Vitest
+        run: npm run test:run
 
-      - run: npm run build
+      # Build de produção
+      - name: Build
+        run: npm run build
 
-      - run: npx playwright install --with-deps chromium
+      # Instala navegador para testes E2E
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
 
-      - run: npm run test:e2e
+      # Inicia os serviços necessários para o E2E
+      - name: Start application
+        run: docker compose -f ../docker-compose.yml up -d --build
 
+      # Aguarda o PostgreSQL
+      - name: Wait for PostgreSQL
+        run: |
+          for attempt in $(seq 1 30); do
+            if docker compose -f ../docker-compose.yml exec -T db pg_isready -U c216 -d c216; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker compose -f ../docker-compose.yml logs db
+          exit 1
+
+      # Aguarda backend e frontend
+      - name: Wait for application
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://localhost:8000/ > /dev/null && \
+               curl -fsS http://localhost:5173/ > /dev/null; then
+              echo "Aplicação disponível."
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker compose -f ../docker-compose.yml logs
+          exit 1
+
+      # Prepara o banco para o teste E2E
+      - name: Run database migrations
+        run: docker compose -f ../docker-compose.yml exec -T api alembic upgrade head
+
+      # Teste de persistência
+      - name: Playwright E2E
+        run: npm run test:e2e
+
+      # Relatórios em caso de falha
       - name: Upload Playwright Report
         if: failure()
         uses: actions/upload-artifact@v4
@@ -55,3 +107,8 @@ jobs:
             frontend/test-results
           if-no-files-found: warn
           retention-days: 7
+
+      # Finaliza os containers
+      - name: Stop application
+        if: always()
+        run: docker compose -f ../docker-compose.yml down

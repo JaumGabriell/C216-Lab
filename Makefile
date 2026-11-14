@@ -7,10 +7,10 @@ NPM = npm
 
 # Phony targets
 .PHONY: help install test test-verbose test-cov lint format run \
-	frontend-install frontend-dev frontend-lint frontend-format frontend-check \
-	frontend-test frontend-test-e2e frontend-build check-all \
-	compose-up compose-down compose-ps compose-build compose-logs compose-restart \
-	docker-ps
+    frontend-install frontend-dev frontend-lint frontend-format frontend-check \
+    frontend-test frontend-test-e2e frontend-build check-all \
+    compose-up compose-down compose-ps compose-build compose-logs compose-restart \
+    docker-ps db-upgrade db-current db-heads
 
 # Target padrão
 .DEFAULT_GOAL := help
@@ -98,3 +98,14 @@ lint: ## Executa o linter (ruff)
 
 format: ## Formata o código (ruff)
 	cd $(BACKEND_DIR) && $(POETRY) run ruff format .
+
+# Database Migrations
+
+db-upgrade: ## Aplica todas as migrations pendentes até o head
+	docker compose exec -T api alembic upgrade head
+
+db-current: ## Mostra a revisão atual aplicada no banco
+	docker compose exec -T api alembic current
+
+db-heads: ## Mostra a última revisão disponível nas migrations
+	docker compose exec -T api alembic heads
