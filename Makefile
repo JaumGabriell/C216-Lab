@@ -10,6 +10,14 @@ install: ## Instala as dependências do backend
 test: ## Executa os testes do backend
 	cd $(BACKEND_DIR) && $(POETRY) run pytest
 
+lint: ## Verifica lint e formatação do backend
+	cd $(BACKEND_DIR) && $(POETRY) run ruff check .
+	cd $(BACKEND_DIR) && $(POETRY) run ruff format --check .
+
+format: ## Corrige lint e aplica formatação
+	cd $(BACKEND_DIR) && $(POETRY) run ruff check --fix .
+	cd $(BACKEND_DIR) && $(POETRY) run ruff format .
+
 compose-up: ## Inicia os containers do docker
 	docker compose up -d
 
