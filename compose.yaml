@@ -5,13 +5,19 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     environment:
-      ENVIROMENT: development
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://c216:c216@db:5432/c216
     volumes:
       - ./backend/app:/app/app
+      - ./backend/core:/app/core
+      - ./backend/database:/app/database
+      - ./backend/models:/app/models
+      - ./backend/repositories:/app/repositories
     command:
       [
         "uvicorn",
@@ -34,6 +40,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U c216 -d c216"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   postgres_data:
