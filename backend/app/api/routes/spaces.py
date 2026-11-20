@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query, status
 
-from app.api.deps import get_space_service
+from app.api.deps import get_space_service, require_admin
 from app.schemas.space import SpaceCreate, SpaceRead, SpaceUpdate
 from app.service.space_service import SpaceService
 
@@ -26,17 +26,28 @@ def get_space(space_id: int, service: SpaceService = Depends(get_space_service))
 
 
 @router.post("", response_model=SpaceRead, status_code=status.HTTP_201_CREATED)
-def create_space(data: SpaceCreate, service: SpaceService = Depends(get_space_service)):
+def create_space(
+    data: SpaceCreate,
+    service: SpaceService = Depends(get_space_service),
+    _admin=Depends(require_admin),
+):
     return service.create(data)
 
 
 @router.put("/{space_id}", response_model=SpaceRead)
 def update_space(
-    space_id: int, data: SpaceUpdate, service: SpaceService = Depends(get_space_service)
+    space_id: int,
+    data: SpaceUpdate,
+    service: SpaceService = Depends(get_space_service),
+    _admin=Depends(require_admin),
 ):
     return service.update(space_id, data)
 
 
 @router.delete("/{space_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_space(space_id: int, service: SpaceService = Depends(get_space_service)):
+def delete_space(
+    space_id: int,
+    service: SpaceService = Depends(get_space_service),
+    _admin=Depends(require_admin),
+):
     service.delete(space_id)

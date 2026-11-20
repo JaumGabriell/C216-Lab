@@ -10,6 +10,7 @@ from app.schemas.reservation import (
 )
 from app.service.reservation_service import ReservationService
 from models.reservation import ReservationStatus
+from app.api.deps import get_reservation_service, require_admin
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
 

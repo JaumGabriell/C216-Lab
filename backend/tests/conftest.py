@@ -28,6 +28,16 @@ def client():
 
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as c:
+        auth = c.post(
+            "/auth/register",
+            json={
+                "name": "Administrador",
+                "email": "admin@admin.com",
+                "password": "admin123",
+            },
+        )
+        if auth.status_code == 201:
+            c.headers["Authorization"] = f"Bearer {auth.json()['token']}"
         yield c
     app.dependency_overrides.clear()
     Base.metadata.drop_all(engine)
