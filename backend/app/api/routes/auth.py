@@ -21,7 +21,9 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, password_hash: str) -> bool:
     try:
         salt, digest = password_hash.split("$", 1)
-        candidate = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000)
+        candidate = hashlib.pbkdf2_hmac(
+            "sha256", password.encode(), salt.encode(), 100_000
+        )
         return secrets.compare_digest(candidate.hex(), digest)
     except ValueError:
         return False
